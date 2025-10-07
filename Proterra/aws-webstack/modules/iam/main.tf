@@ -15,7 +15,11 @@ resource "aws_iam_role" "role" {
 data "aws_iam_policy_document" "assume" {
   statement {
     actions = ["sts:AssumeRole"]
-    principals { type = "Service" identifiers = ["ec2.amazonaws.com"] }
+principals {
+  type        = "Service"
+  identifiers = ["ec2.amazonaws.com"]
+}
+
   }
 }
 resource "aws_iam_instance_profile" "profile" {

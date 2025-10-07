@@ -4,7 +4,11 @@ resource "aws_db_subnet_group" "db" {
   tags       = var.tags
 }
 
-resource "random_password" "db" { length = 16 special = false }
+resource "random_password" "db" {
+  length  = 16
+  special = false
+}
+
 
 resource "aws_db_instance" "postgres" {
   identifier              = "${var.name}-pg"

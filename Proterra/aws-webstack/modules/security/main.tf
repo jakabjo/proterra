@@ -4,34 +4,58 @@ resource "aws_security_group" "alb" {
   description = "ALB"
   tags        = merge(var.tags, { Name = "alb-sg" })
 }
+# ALB ingress: allow HTTP from anywhere
 resource "aws_security_group_rule" "alb_in_http" {
-  type = "ingress" from_port = 80 to_port = 80 protocol = "tcp"
-  cidr_blocks = ["0.0.0.0/0"]
+  type              = "ingress"
+  from_port         = 80
+  to_port           = 80
+  protocol          = "tcp"
+  cidr_blocks       = ["0.0.0.0/0"]
   security_group_id = aws_security_group.alb.id
 }
+
+# App Security Group
 resource "aws_security_group" "app" {
-  name = "app-sg" vpc_id = var.vpc_id
+  name        = "app-sg"
+  vpc_id      = var.vpc_id
   description = "App"
-  tags = merge(var.tags, { Name = "app-sg" })
+  tags        = merge(var.tags, { Name = "app-sg" })
 }
+
+# App ingress: allow from ALB SG
 resource "aws_security_group_rule" "app_in_from_alb" {
-  type = "ingress" from_port = 80 to_port = 80 protocol = "tcp"
-  security_group_id = aws_security_group.app.id
+  type                     = "ingress"
+  from_port                = 80
+  to_port                  = 80
+  protocol                 = "tcp"
+  security_group_id       = aws_security_group.app.id
   source_security_group_id = aws_security_group.alb.id
 }
+
+# Database Security Group
 resource "aws_security_group" "db" {
-  name = "db-sg" vpc_id = var.vpc_id
+  name        = "db-sg"
+  vpc_id      = var.vpc_id
   description = "Postgres"
-  tags = merge(var.tags, { Name = "db-sg" })
+  tags        = merge(var.tags, { Name = "db-sg" })
 }
+
+# DB ingress: allow PostgreSQL from App SG
 resource "aws_security_group_rule" "db_in_from_app" {
-  type = "ingress" from_port = 5432 to_port = 5432 protocol = "tcp"
-  security_group_id = aws_security_group.db.id
+  type                     = "ingress"
+  from_port                = 5432
+  to_port                  = 5432
+  protocol                 = "tcp"
+  security_group_id       = aws_security_group.db.id
   source_security_group_id = aws_security_group.app.id
 }
-# Egress scoping (optional: default egress is allow-all; tighten where desired)
+
+# Egress scoping: ALB → App (optional)
 resource "aws_security_group_rule" "alb_eg_to_app" {
-  type = "egress" from_port = 80 to_port = 80 protocol = "tcp"
-  security_group_id = aws_security_group.alb.id
+  type                     = "egress"
+  from_port                = 80
+  to_port                  = 80
+  protocol                 = "tcp"
+  security_group_id       = aws_security_group.alb.id
   source_security_group_id = aws_security_group.app.id
 }

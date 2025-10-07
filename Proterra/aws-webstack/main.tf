@@ -6,11 +6,11 @@ locals {
 }
 
 module "network" {
-  source    = "./modules/network"
-  name      = var.name
-  vpc_cidr  = var.vpc_cidr
-  azs       = local.azs
-  tags      = local.tags_all
+  source   = "./modules/network"
+  name     = var.name
+  vpc_cidr = var.vpc_cidr
+  azs      = local.azs
+  tags     = local.tags_all
 }
 
 module "security" {
@@ -31,27 +31,28 @@ module "iam" {
   name   = var.name
   tags   = local.tags_all
 
-  # Narrowed later once data module outputs ARNs; Terraform graph handles order
-  secret_arns     = []
-  parameter_arns  = []
+  # Narrowed later once data module outputs ARNs; OK to start empty
+  secret_arns    = []
+  parameter_arns = []
 }
 
 module "compute" {
-  source            = "./modules/compute"
-  name              = var.name
-  instance_type     = var.instance_type
-  asg_min           = var.asg_min
-  asg_max           = var.asg_max
-  asg_desired       = var.asg_desired
-  public_subnet_ids = module.network.public_subnet_ids
-  private_subnet_ids= module.network.private_subnet_ids
-  vpc_id            = module.network.vpc_id
-  alb_sg_id         = module.security.alb_sg_id
-  app_sg_id         = module.security.app_sg_id
-  alb_logs_bucket   = module.storage.alb_logs_bucket
-  instance_profile  = module.iam.instance_profile_name
-  tags              = local.tags_all
+  source             = "./modules/compute"
+  name               = var.name
+  instance_type      = var.instance_type
+  asg_min            = var.asg_min
+  asg_max            = var.asg_max
+  asg_desired        = var.asg_desired
+  public_subnet_ids  = module.network.public_subnet_ids
+  private_subnet_ids = module.network.private_subnet_ids
+  vpc_id             = module.network.vpc_id
+  alb_sg_id          = module.security.alb_sg_id
+  app_sg_id          = module.security.app_sg_id
+  alb_logs_bucket    = module.storage.alb_logs_bucket
+  instance_profile   = module.iam.instance_profile_name
+  tags               = local.tags_all
 }
+
 
 module "data" {
   source             = "./modules/data"

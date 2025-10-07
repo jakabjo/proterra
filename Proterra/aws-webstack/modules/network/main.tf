@@ -42,8 +42,14 @@ resource "aws_route_table_association" "public_assoc" {
   subnet_id      = each.value.id
   route_table_id = aws_route_table.public.id
 }
+resource "aws_eip" "nat" {
+  domain = "vpc"
 
-resource "aws_eip" "nat" { domain = "vpc"  tags = merge(var.tags, { Name = "${var.name}-eip-nat" }) }
+  tags = merge(
+    var.tags,
+    { Name = "${var.name}-eip-nat" }
+  )
+}
 resource "aws_nat_gateway" "nat" {
   allocation_id = aws_eip.nat.id
   subnet_id     = values(aws_subnet.public)[0].id

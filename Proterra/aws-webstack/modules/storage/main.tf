@@ -1,4 +1,8 @@
-resource "random_string" "suffix" { length = 6 upper = false special = false }
+resource "random_string" "suffix" {
+  length  = 6
+  upper   = false
+  special = false
+}
 
 # App bucket
 resource "aws_s3_bucket" "app" {
@@ -10,8 +14,11 @@ resource "aws_s3_bucket_versioning" "app" {
   versioning_configuration { status = "Enabled" }
 }
 resource "aws_s3_bucket_public_access_block" "app" {
-  bucket = aws_s3_bucket.app.id
-  block_public_acls=true block_public_policy=true ignore_public_acls=true restrict_public_buckets=true
+  bucket                  = aws_s3_bucket.app.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
 
 # ALB logs bucket + lifecycle + policy
@@ -30,13 +37,26 @@ resource "aws_s3_bucket_acl" "acl" {
   depends_on = [aws_s3_bucket_ownership_controls.own]
 }
 resource "aws_s3_bucket_public_access_block" "alb_logs" {
-  bucket = aws_s3_bucket.alb_logs.id
-  block_public_acls=true block_public_policy=true ignore_public_acls=true restrict_public_buckets=true
+  bucket                  = aws_s3_bucket.alb_logs.id
+  block_public_acls       = true
+  block_public_policy     = true
+  ignore_public_acls      = true
+  restrict_public_buckets = true
 }
+
 resource "aws_s3_bucket_lifecycle_configuration" "lc" {
   bucket = aws_s3_bucket.alb_logs.id
-  rule { id = "expire-90-days" status="Enabled" expiration { days=90 } }
+
+  rule {
+    id     = "expire-90-days"
+    status = "Enabled"
+
+    expiration {
+      days = 90
+    }
+  }
 }
+
 resource "aws_s3_bucket_policy" "policy" {
   bucket = aws_s3_bucket.alb_logs.id
   policy = jsonencode({

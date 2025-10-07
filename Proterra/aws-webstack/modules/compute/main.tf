@@ -2,8 +2,13 @@
 data "aws_ami" "al2" {
   most_recent = true
   owners      = ["amazon"]
-  filter { name = "name" values = ["amzn2-ami-kernel-5.*-x86_64-gp2"] }
+
+  filter {
+    name   = "name"
+    values = ["amzn2-ami-kernel-5.*-x86_64-gp2"]
+  }
 }
+
 
 # Launch template (private only; SSM via instance profile; no SSH)
 resource "aws_launch_template" "lt" {
@@ -34,23 +39,45 @@ resource "aws_lb" "alb" {
   load_balancer_type = "application"
   security_groups    = [var.alb_sg_id]
   subnets            = var.public_subnet_ids
-  access_logs { bucket = var.alb_logs_bucket, prefix = var.name, enabled = true }
+
+  access_logs {
+    bucket  = var.alb_logs_bucket
+    prefix  = var.name
+    enabled = true
+  }
+
   tags = var.tags
 }
+
 resource "aws_lb_target_group" "tg" {
   name     = "${var.name}-tg"
   port     = 80
   protocol = "HTTP"
   vpc_id   = var.vpc_id
-  health_check { path="/"; matcher="200-399"; interval=15; timeout=5; healthy_threshold=2; unhealthy_threshold=2 }
+
+  health_check {
+    path                = "/"
+    matcher             = "200-399"
+    interval            = 15
+    timeout             = 5
+    healthy_threshold   = 2
+    unhealthy_threshold = 2
+  }
+
   tags = var.tags
 }
+
 resource "aws_lb_listener" "http" {
   load_balancer_arn = aws_lb.alb.arn
-  port = 80
-  protocol = "HTTP"
-  default_action { type = "forward" target_group_arn = aws_lb_target_group.tg.arn }
+  port              = 80
+  protocol          = "HTTP"
+
+  default_action {
+    type             = "forward"
+    target_group_arn = aws_lb_target_group.tg.arn
+  }
 }
+
 
 # ASG across private subnets, target group attached
 resource "aws_autoscaling_group" "asg" {
@@ -59,16 +86,34 @@ resource "aws_autoscaling_group" "asg" {
   desired_capacity          = var.asg_desired
   min_size                  = var.asg_min
   max_size                  = var.asg_max
-  health_check_type         = "EC2"
+  health_check_type         = "EC2" # or "ELB" if you prefer LB health as the source of truth
   health_check_grace_period = 90
   target_group_arns         = [aws_lb_target_group.tg.arn]
 
-  launch_template { id = aws_launch_template.lt.id, version = "$Latest" }
+  launch_template {
+    id      = aws_launch_template.lt.id
+    version = "$Latest"
+  }
 
-  tags = concat(
-    [ { key="Name", value="${var.name}-app", propagate_at_launch=true } ],
-    [ for k,v in var.tags : { key=k, value=v, propagate_at_launch=true } ]
-  )
+  # Instance tags to propagate at launch
+  tag {
+    key                 = "Name"
+    value               = "${var.name}-app"
+    propagate_at_launch = true
+  }
+
+  # Propagate every tag from var.tags to instances
+  dynamic "tag" {
+    for_each = var.tags
+    content {
+      key                 = tag.key
+      value               = tag.value
+      propagate_at_launch = true
+    }
+  }
+
+  # Optional: tune termination policies / capacity rebalance, etc.
+  # termination_policies = ["OldestInstance", "Default"]
 }
 
 # Target tracking scaling (CPU + Request count)
