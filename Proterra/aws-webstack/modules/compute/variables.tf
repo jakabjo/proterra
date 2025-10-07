@@ -1,0 +1,13 @@
+variable "name"              { type = string }
+variable "instance_type"     { type = string }
+variable "asg_min"           { type = number }
+variable "asg_max"           { type = number }
+variable "asg_desired"       { type = number }
+variable "public_subnet_ids" { type = list(string) }
+variable "private_subnet_ids"{ type = list(string) }
+variable "vpc_id"            { type = string }
+variable "alb_sg_id"         { type = string }
+variable "app_sg_id"         { type = string }
+variable "alb_logs_bucket"   { type = string }
+variable "instance_profile"  { type = string }
+variable "tags"              { type = map(string) }

@@ -1,0 +1,9 @@
+variable "name"               { type = string }
+variable "vpc_id"             { type = string }
+variable "private_subnet_ids" { type = list(string) }
+variable "db_sg_id"           { type = string }
+variable "db_instance_class"  { type = string }
+variable "db_storage_gb"      { type = number }
+variable "db_multi_az"        { type = bool }
+variable "db_engine_version"  { type = string }
+variable "tags"               { type = map(string) }
