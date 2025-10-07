@@ -30,8 +30,8 @@ export AWS_DEFAULT_REGION="us-east-1"
 Clone the repository and navigate into it:
 
 ```bash
-git clone https://github.com/jakabjo/aws-webstack.git
-cd aws-webstack
+git clone https://github.com/jakabjo/proterra.git
+cd Proterra/aws-webstack
 ```
 
 Initialize Terraform and download providers:
