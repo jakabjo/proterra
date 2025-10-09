@@ -1,0 +1,13 @@
+variable "project" { type = string }
+variable "vpc_id"   { type = string }
+variable "vpc_cidr" { type = string }
+variable "subnet_id"{ type = string }
+variable "instance_type" { type = string }
+variable "key_name" { type = string }
+variable "sql_port" { type = number }
+variable "health_port" { type = number }
+variable "ad_domain_name" { type = string }
+variable "ad_join_user" { type = string }
+variable "ad_join_password_ssm_param" { type = string }
+variable "ad_target_ou" { type = string }
+variable "onprem_cidr" { type = string }
